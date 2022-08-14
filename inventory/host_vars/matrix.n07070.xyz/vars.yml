@@ -1,0 +1,160 @@
+---
+# The bare domain name which represents your Matrix identity.
+# Matrix user ids for your server will be of the form (`@user:<matrix-domain>`).
+#
+# Note: this playbook does not touch the server referenced here.
+# Installation happens on another server ("matrix.<matrix-domain>").
+#
+# If you've deployed using the wrong domain, you'll have to run the Uninstalling step,
+# because you can't change the Domain after deployment.
+#
+# Example value: example.com
+matrix_domain: n07070.xyz
+sysadmin_email: "server@n07070.xyz"
+
+# The Matrix homeserver software to install.
+# See `roles/matrix-base/defaults/main.yml` for valid options.
+matrix_homeserver_implementation: synapse
+
+# A secret used as a base, for generating various other secrets.
+# You can put any string here, but generating a strong one is preferred (e.g. `pwgen -s 64 1`).
+matrix_homeserver_generic_secret_key: "{{ vault_matrix_homeserver_generic_secret_key }}"
+
+# This is something which is provided to Let's Encrypt when retrieving SSL certificates for domains.
+#
+# In case SSL renewal fails at some point, you'll also get an email notification there.
+#
+# If you decide to use another method for managing SSL certificates (different than the default Let's Encrypt),
+# you won't be required to define this variable (see `docs/configuring-playbook-ssl-certificates.md`).
+#
+# Example value: someone@example.com
+matrix_ssl_lets_encrypt_support_email: "{{ sysadmin_email }}"
+
+# A Postgres password to use for the superuser Postgres user (called `matrix` by default).
+#
+# The playbook creates additional Postgres users and databases (one for each enabled service)
+# using this superuser account.
+matrix_postgres_connection_password: "{{ vault_matrix_postegres_connection_password }}"
+
+# Don't enable element
+matrix_client_element_enabled: false
+
+# Do not retrieve SSL certificates. This shall be managed by another webserver or other means.
+matrix_ssl_retrieval_method: none
+
+# Do not try to serve HTTPS, since we have no SSL certificates.
+# Disabling this also means services will be served on the HTTP port
+# (`matrix_nginx_proxy_container_http_host_bind_port`).
+matrix_nginx_proxy_https_enabled: false
+
+# Do not listen for HTTP on port 80 globally (default), listen on the loopback interface.
+# If you'd like, you can make it use the local network as well and reverse-proxy from another local machine.
+matrix_nginx_proxy_container_http_host_bind_port: '127.0.0.1:81'
+
+# Likewise, expose the Matrix Federation port on the loopback interface.
+# Since `matrix_nginx_proxy_https_enabled` is set to `false`, this federation port will serve HTTP traffic.
+# If you'd like, you can make it use the local network as well and reverse-proxy from another local machine.
+#
+# You'd most likely need to expose it publicly on port 8448 (8449 was chosen for the local port to prevent overlap).
+matrix_nginx_proxy_container_federation_host_bind_port: '127.0.0.1:8449'
+
+# Coturn relies on SSL certificates that have already been obtained.
+# Since we don't obtain any certificates (`matrix_ssl_retrieval_method: none` above), it won't work by default.
+# An alternative is to tweak some of: `matrix_coturn_tls_enabled`, `matrix_coturn_tls_cert_path` and `matrix_coturn_tls_key_path`.
+matrix_coturn_enabled: false
+
+# Trust the reverse proxy to send the correct `X-Forwarded-Proto` header as it is handling the SSL connection.
+matrix_nginx_proxy_trust_forwarded_proto: true
+
+# Trust and use the other reverse proxy's `X-Forwarded-For` header.
+matrix_nginx_proxy_x_forwarded_for: '$proxy_add_x_forwarded_for'
+
+# Enable pSQL backups
+matrix_postgres_backup_enabled: true
+
+
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+#         Old matrix server configuration
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+# # The bare domain name which represents your Matrix identity.
+# # Matrix user ids for your server will be of the form (`@user:<matrix-domain>`).
+# #
+# # Note: this playbook does not touch the server referenced here.
+# # Installation happens on another server ("matrix.<matrix-domain>").
+# #
+# # If you've deployed using the wrong domain, you'll have to run the Uninstalling step,
+# # because you can't change the Domain after deployment.
+# #
+# # Example value: example.com
+# matrix_domain: n07070.xyz
+
+# # This is something which is provided to Let's Encrypt when retrieving SSL certificates for domains.
+# #
+# # In case SSL renewal fails at some point, you'll also get an email notification there.
+# #
+# # If you decide to use another method for managing SSL certifites (different than the default Let's Encrypt),
+# # you won't be required to define this variable (see `docs/configuring-playbook-ssl-certificates.md`).
+# #
+# # Example value: someone@example.com
+# matrix_ssl_lets_encrypt_support_email: 'social+matrixssl@n07070.xyz'
+
+# # A shared secret (between Coturn and Synapse) used for authentication.
+# # You can put any string here, but generating a strong one is preferred (e.g. `pwgen -s 64 1`).
+# matrix_coturn_turn_static_auth_secret: 'mabaKT5GX564pXcUex55nS3jz8fpahxBJ2oVbNmTroCPSxt7ihgn3o4MRHK7gyFM'
+
+# # A secret used to protect access keys issued by the server.
+# # You can put any string here, but generating a strong one is preferred (e.g. `pwgen -s 64 1`).
+# matrix_synapse_macaroon_secret_key: 'nddWwteJzW9CatcXWEjrfJhQr2nXKZcTCwF4B2HRti7H5YS2Kr92qvzxupNUsEAG'
+
+# # A Postgres password to use for the superuser Postgres user (called `matrix` by default).
+# #
+# # The playbook creates additional Postgres users and databases (one for each enabled service)
+# # using this superuser account.
+# matrix_postgres_connection_password: '87At243bCwPmZ7Rg4TWkMdEavGTfSnEAQCU2UYrgdMTHKQo6d9a4biK5rRBizkCq'
+
+# # Nginx
+# matrix_nginx_proxy_enabled: false
+# matrix_nginx_proxy_ssl_protocols: "TLSv1.2"
+
+# # Shared secret
+# matrix_synapse_ext_password_provider_shared_secret_auth_enabled: true
+# matrix_synapse_ext_password_provider_shared_secret_auth_shared_secret: 'qnFYgEBpv3uuvwVnbdGPqVAGXG9gxheuX83mpwd732MpMEdzTzeWazUpV9gWcNq7'
+
+
+# # email
+# #
+# matrix_mailer_sender_address: "matrix@n07070.xyz"
+# matrix_mailer_relay_use: true
+# matrix_mailer_relay_host_name: "mail.gandi.net"
+# matrix_mailer_relay_host_port: 587
+# matrix_mailer_relay_auth: true
+# matrix_mailer_relay_auth_username: "me@n07070.xyz"
+# matrix_mailer_relay_auth_password: "|*0%)U'SAB,S~N`*'.b[Tj<6~:*eV5gS+znW_>=["
+
+
+# # telegram
+# matrix_mautrix_telegram_enabled: true
+# matrix_mautrix_telegram_api_id: 4822233
+# matrix_mautrix_telegram_api_hash: '96f3567deeb9aa1a17d637382b51b107'
+
+# # reminder bot
+# matrix_bot_matrix_reminder_bot_enabled: true
+
+# # Adjust this to whatever password you chose when registering the bot user
+# matrix_bot_matrix_reminder_bot_matrix_user_password: 'UnhelpfulBullfrogStatisticCatchingGapSpiritismVentricleGeologistEvidentPellet'
+
+# # Adjust this to your timezone
+# matrix_bot_matrix_reminder_bot_reminders_timezone: Europe/Paris
+
+# # Neb bot
+# matrix_bot_go_neb_enabled: false
+
+# # Matrix admin
+# matrix_synapse_admin_enabled: true
+
+# # Enable pSQL backups
+# matrix_postgres_backup_enabled: true
